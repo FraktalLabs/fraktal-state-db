@@ -4,13 +4,11 @@
 #include <iostream>
 
 #include "rpc.h"
-
-#include <intx/intx.hpp>
-#include <evm-cpp-utils/types.h>
+#include "../state/fraktal_state.h"
 
 struct RunData {
   std::string snapshotFile;
-  std::shared_ptr<State> state;
+  std::shared_ptr<FraktalState> state;
   
   std::string serverAddress;
   int serverPort;
@@ -76,12 +74,12 @@ std::unique_ptr<RunData> parseRunDBCmdlineArgs(int argc, char *argv[]) {
     serverPort = 8545;
   }
 
-  auto state = std::make_shared<State>(snapshotFile);
+  auto state = std::make_shared<FraktalState>(snapshotFile);
 
   return std::make_unique<RunData>(RunData{snapshotFile, state, serverAddress, serverPort});
 }
 
-void runServer(std::shared_ptr<State> state, std::string address, int port) {
+void runServer(std::shared_ptr<FraktalState> state, std::string address, int port) {
   // Create RPC server
   RpcServer server = RpcServer(state);
 

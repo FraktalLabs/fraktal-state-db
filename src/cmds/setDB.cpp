@@ -3,12 +3,11 @@
 #include <memory>
 #include <iostream>
 
-#include <intx/intx.hpp>
-#include <evm-cpp-utils/types.h>
+#include "../state/fraktal_account.h"
 
 struct SetValueData {
   std::string snapshotFile;
-  std::shared_ptr<State> state;
+  std::shared_ptr<FraktalState> state;
 
   address contractAddress;
   intx::uint256 key;
@@ -90,7 +89,7 @@ std::unique_ptr<SetValueData> parseSetCmdlineArgs(int argc, char *argv[]) {
     exit(1);
   }
 
-  auto state = std::make_shared<State>(snapshotFile);
+  auto state = std::make_shared<FraktalState>(snapshotFile);
 
   bytes contractAddressBytes = parseBytes(contractAddressStr);
   address contractAddress;
@@ -105,7 +104,7 @@ std::unique_ptr<SetValueData> parseSetCmdlineArgs(int argc, char *argv[]) {
 }
 
 void setDBValue(const SetValueData& data) {
-  std::shared_ptr<Account> account = data.state->get(data.contractAddress);
+  std::shared_ptr<FraktalAccount> account = std::static_pointer_cast<FraktalAccount>(data.state->get(data.contractAddress));
   account->setStorage(data.key, data.value);
 
   std::cout << "Set Value: " << intx::to_string(data.value) << std::endl;

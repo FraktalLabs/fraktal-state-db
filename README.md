@@ -3,6 +3,7 @@
 [![readme style standard](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
 Ethereum VM state database
+Provides Fraktal-VM State access through a stand-alone C++ executable.
 
 Stand-alone C++20 executable used to run EVM state database.
 Basically acts as a command wrapper around `evm-cpp-utils` state.

@@ -3,12 +3,10 @@
 #include <memory>
 #include <iostream>
 
-#include <intx/intx.hpp>
-#include <evm-cpp-utils/types.h>
-#include <evm-cpp-utils/utils.h>
+#include "../state/fraktal_account.h"
 
 struct GetValueData {
-  std::shared_ptr<State> state;
+  std::shared_ptr<FraktalState> state;
 
   address contractAddress;
   intx::uint256 key;
@@ -76,7 +74,7 @@ std::unique_ptr<GetValueData> parseGetCmdlineArgs(int argc, char *argv[]) {
     exit(1);
   }
 
-  auto state = std::make_shared<State>(snapshotFile);
+  auto state = std::make_shared<FraktalState>(snapshotFile);
 
   bytes contractAddressBytes = parseBytes(contractAddressStr);
   address contractAddress;
@@ -90,8 +88,8 @@ std::unique_ptr<GetValueData> parseGetCmdlineArgs(int argc, char *argv[]) {
 }
 
 void getDBValue(const GetValueData& data) {
-  std::shared_ptr<Account> account = data.state->get(data.contractAddress);
-  auto value = account->getStorage(data.key);
+  std::shared_ptr<FraktalAccount> fraktalAccount = std::static_pointer_cast<FraktalAccount>(data.state->get(data.contractAddress));
+  auto value = fraktalAccount->getStorage(data.key);
 
   std::cout << "Value: " << intx::to_string(value) << std::endl;
 }

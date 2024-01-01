@@ -22,14 +22,14 @@ SRCS := $(shell find $(SRC_DIR) -name '*.cpp')
 SRCS_WITH_SRC_STRIPPED := $(subst $(SRC_DIR)/,,$(SRCS))
 OBJS := $(SRCS_WITH_SRC_STRIPPED:%=$(BUILD_DIR)/%.o)
 
-all: evm-state-db
+all: fraktal-state-db
 
 clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR)
 
-evm-state-db: $(OBJS)
+fraktal-state-db: $(OBJS)
 	mkdir -p $(BIN_DIR)
-	$(CC) $(CPPFLAGS) $(INC_LIBS) $(LINK_LIBS) $(OBJS) -o $(BIN_DIR)/evm-state-db
+	$(CC) $(CPPFLAGS) $(INC_LIBS) $(LINK_LIBS) $(OBJS) -o $(BIN_DIR)/fraktal-state-db
 
 $(BUILD_DIR)/%.cpp.o: $(SRC_DIR)/%.cpp
 	mkdir -p $(dir $@)
@@ -39,13 +39,13 @@ TEST_DIR := ./test
 TEST_SNAPSHOT_FILE := ${TEST_DIR}/snapshot.json
 
 get-test:
-	$(BIN_DIR)/evm-state-db get --snapshotFile ${TEST_SNAPSHOT_FILE} --contractAddress 4200000000000000000000000000000000000aaa --key 42
+	$(BIN_DIR)/fraktal-state-db get --snapshotFile ${TEST_SNAPSHOT_FILE} --contractAddress 4200000000000000000000000000000000000aaa --key 42
 
 set-test:
-	$(BIN_DIR)/evm-state-db set --snapshotFile ${TEST_SNAPSHOT_FILE} --contractAddress 4200000000000000000000000000000000000aaa --key 42 --value 512
+	$(BIN_DIR)/fraktal-state-db set --snapshotFile ${TEST_SNAPSHOT_FILE} --contractAddress 4200000000000000000000000000000000000aaa --key 42 --value 516
 
 run-rpc-local:
-	$(BIN_DIR)/evm-state-db run --snapshotFile ${TEST_SNAPSHOT_FILE} --rpcPort 8999
+	$(BIN_DIR)/fraktal-state-db run --snapshotFile ${TEST_SNAPSHOT_FILE} --rpcPort 8999
 
 get-rpc-test:
 	curl -X POST -H "Content-Type: application/json" --data '--contractAddress 4200000000000000000000000000000000000aaa --key 42' http://localhost:8999
