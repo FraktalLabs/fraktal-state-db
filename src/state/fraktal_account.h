@@ -32,6 +32,7 @@ public:
     // TODO : set nonce, other fields?
     
     virtual void setStorage(const intx::uint256& key, const intx::uint256& value) override;
+    intx::uint256 getStorageAtNonce(const intx::uint256& key, const intx::uint256& nonce) const;
     virtual intx::uint256 getStorage(const intx::uint256& key) const override;
 
     // TODO: Provide non mutex / history regarding set and get functions for testing, ...

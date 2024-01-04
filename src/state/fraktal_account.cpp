@@ -188,20 +188,43 @@ void FraktalAccount::setStorage(const intx::uint256& key, const intx::uint256& v
   state->unlockMutex(static_cast<uint64_t>(mutexId));
 }
 
+intx::uint256 FraktalAccount::getStorageAtNonce(const intx::uint256& key, const intx::uint256& nonce) const {
+  auto storageKeyHistoryIt = storageNonceValueHistory.find(key);
+  if (storageKeyHistoryIt != storageNonceValueHistory.end()) {
+    auto storageNonceValueHistoryIt = storageKeyHistoryIt->second.find(nonce);
+    if (storageNonceValueHistoryIt != storageKeyHistoryIt->second.end()) {
+      return storageNonceValueHistoryIt->second;
+    } else {
+      // Go back one nonce & try again
+      if (nonce > 0) {
+        return getStorageAtNonce(key, nonce-1);
+      } else {
+        return 0;
+      }
+    }
+  } else {
+    return 0;
+  }
+}
+
 intx::uint256 FraktalAccount::getStorage(const intx::uint256& key) const {
   // TODO: 
-  intx::uint256 storageNonce = (storageNonces.find(key) != storageNonces.end() ? storageNonces.at(key) : 0);
-  bool storageHistoryKeyExists = (storageNonceValueHistory.find(key) != storageNonceValueHistory.end());
-  bool storageNonceValueInHistory = (storageHistoryKeyExists &&
-      storageNonceValueHistory.at(key).find(storageNonce) != storageNonceValueHistory.at(key).end());
-  if (storageNonceValueInHistory) {
-    return storageNonceValueHistory.at(key).at(storageNonce);
-  } else {
-    if (storageHistoryKeyExists) {
-      return storageNonceValueHistory.at(key).at(storageNonce-1);
-    } else {
-      return 0;
-    }
-  }
+  auto storageNonceIt = storageNonces.find(key);
+  intx::uint256 storageNonce = (storageNonceIt != storageNonces.end() ? storageNonceIt->second : 0);
+
+  return getStorageAtNonce(key, storageNonce);
+  //intx::uint256 storageNonce = (storageNonces.find(key) != storageNonces.end() ? storageNonces.at(key) : 0);
+  //bool storageHistoryKeyExists = (storageNonceValueHistory.find(key) != storageNonceValueHistory.end());
+  //bool storageNonceValueInHistory = (storageHistoryKeyExists &&
+  //    storageNonceValueHistory.at(key).find(storageNonce) != storageNonceValueHistory.at(key).end());
+  //if (storageNonceValueInHistory) {
+  //  return storageNonceValueHistory.at(key).at(storageNonce);
+  //} else {
+  //  if (storageHistoryKeyExists) {
+  //    return storageNonceValueHistory.at(key).at(storageNonce-1);
+  //  } else {
+  //    return 0;
+  //  }
+  //}
   // TODO: provide DA on nonce, value pairs used in gets
 }
