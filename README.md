@@ -5,7 +5,7 @@
 Fraktal VM state database
 
 Stand-alone C++20 executable and library used for Fraktal VM state.
-Fork of [evm-state-db][evm-state-db] with state & account class overrides.
+Fork of ![evm-state-db][evm-state-db] with state & account class overrides.
 State access done thru nonce-locks to enable replayablity & thread safety.
 
 ## Table of Contents
@@ -85,19 +85,19 @@ Fraktal VM allows parallel execution of smart contracts.
 Thus, there are potential race conditions on state access operations.
 
 In order to prevent race conditions on set operations :
-1 ) `FraktalState` provides a `mutexSpace`, a fixed size array of mutexes for accessing state.
-2 ) When `FraktalAccount` does a `setStorage` operation,
+1. `FraktalState` provides a `mutexSpace`, a fixed size array of mutexes for accessing state.
+2. When `FraktalAccount` does a `setStorage` operation,
     lock the mutex at position `hash(contract addr, storage key) % mutexSpaceSize`
 
 In order to prevent race conditions on get operations :
-1 ) `FraktalState` provides `mutexNonces`, nonce that increments when corresponding mutex locks.
-2 ) `FraktalAccount` provides `storageNonces`, nonce that increments when storage value is set.
-3 ) `FraktalAccount` provides `storageNonceValueHistory`, prunable 2d map from key -> nonce -> value
-3 ) When `FraktalAccount` does a `getStorage` operation,
-    get the `storageNonce` at key, get the value at the corresponding `(key, storage nonce)` pair in history
+1. `FraktalState` provides `mutexNonces`, nonce that increments when corresponding mutex locks.
+2. `FraktalAccount` provides `storageNonces`, nonce that increments when storage value is set.
+3. `FraktalAccount` provides `storageNonceValueHistory`, prunable 2d map from key -> nonce -> value
+4. When `FraktalAccount` does a `getStorage` operation,
+    get the `storageNonce` at key then get the value at the corresponding `(key, storage nonce)` pair in history
 
 In order to allow custom locking operations for things like sudo-atomic operations ( Not implemented ) :
-1 ) `FraktalAccount` provides `mutexStorage`, a dynamic mutex storage set
+1. `FraktalAccount` provides `mutexStorage`, a dynamic mutex storage set
 
 Fraktal State DB provides extra functionality for snapshotting new nonces & history.
 
