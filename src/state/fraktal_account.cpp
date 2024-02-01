@@ -44,6 +44,16 @@ std::string FraktalAccount::fraktalAccountToSerialized() const {
     serialized += "\n";
   }
   serialized += "      },\n";
+  serialized += "      \"mutexes\": [\n";
+  serialized += "        ";
+  for (auto it = accountMutexes.begin(); it != accountMutexes.end(); ++it) {
+    serialized += to_string(it->first);
+    if (std::next(it) != accountMutexes.end()) {
+      serialized += ",";
+    }
+  }
+  serialized += "\n";
+  serialized += "      ],\n";
   serialized += "      \"code\": \"";
   for (const auto &byte : code) {
     serialized += byteToHex(byte);
@@ -62,6 +72,7 @@ void FraktalAccount::fraktalAccountFromSerialized(const std::string& serialized)
       continue;
     } else if (serialized[i] == '"') {
       // Parse key
+  
       std::string key;
       for (++i; serialized[i] != '"'; ++i) {
         key += serialized[i];
@@ -160,6 +171,19 @@ void FraktalAccount::fraktalAccountFromSerialized(const std::string& serialized)
             break;
           }
         }
+      } else if (key == "mutexes") {
+        // Parse mutexes
+        for (; serialized[i] != '['; ++i) {}
+        for (++i; serialized[i] != ']'; ++i) {
+          std::string key;
+          for (; serialized[i] != ',' && serialized[i] != ']'; ++i) {
+            key += serialized[i];  
+          }
+          accountMutexes[intx::from_string<intx::uint256>(key)] = std::make_unique<std::mutex>();
+          if (serialized[i] == ']') {  
+            break;
+          }
+        }
       } else if (key == "code") {
         // Parse code
         ++i; // Skip the opening "
@@ -175,7 +199,8 @@ void FraktalAccount::fraktalAccountFromSerialized(const std::string& serialized)
     
 void FraktalAccount::setStorage(const intx::uint256& key, const intx::uint256& value) {
   // Mutex hash fields : accountAddress, key pair // TODO: should I include any more fields like nonce?
-  std::string dataString = addressToHex(accountAddress) + intx::to_string(key) + intx::to_string(storageNonces[key]);
+  // TODO: Remove storage nonce from dataString ?
+  std::string dataString = addressToHex(accountAddress) + intx::to_string(key);
   uint8_t* dataPtr = (uint8_t*)dataString.c_str();
   intx::uint256 mutexId = intx::be::load<intx::uint256>(ethash_keccak256(dataPtr, dataString.size()));
 
@@ -227,4 +252,23 @@ intx::uint256 FraktalAccount::getStorage(const intx::uint256& key) const {
   //  }
   //}
   // TODO: provide DA on nonce, value pairs used in gets
+}
+
+void FraktalAccount::createMutex(const intx::uint256& key) {
+  // TODO: lock state mutex to create mutex || done from setStorage when creating mutex in storage?
+  accountMutexes[key] = std::make_unique<std::mutex>();
+  setStorage(key, 0);
+}
+
+void FraktalAccount::lockMutex(const intx::uint256& key) {
+  // TODO: issue with user accessing mutex before it's created, and through storage ops
+  accountMutexes[key]->lock();
+  intx::uint256 mutexNonce = Account::getStorage(key);
+  storageNonces[key] += 1;
+  Account::setStorage(key, mutexNonce+1);
+  storageNonceValueHistory[key][storageNonces[key]] = Account::getStorage(key);
+}
+
+void FraktalAccount::unlockMutex(const intx::uint256& key) {
+  accountMutexes[key]->unlock();
 }

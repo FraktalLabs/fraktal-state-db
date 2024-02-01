@@ -35,6 +35,10 @@ public:
     intx::uint256 getStorageAtNonce(const intx::uint256& key, const intx::uint256& nonce) const;
     virtual intx::uint256 getStorage(const intx::uint256& key) const override;
 
+    void createMutex(const intx::uint256& mutexId);
+    void lockMutex(const intx::uint256& mutexId);
+    void unlockMutex(const intx::uint256& mutexId);
+
     // TODO: Provide non mutex / history regarding set and get functions for testing, ...
 
 private:
@@ -42,6 +46,7 @@ private:
     FraktalState* state;
     address accountAddress;
     std::map<intx::uint256, intx::uint256> storageNonces;
+    std::map<intx::uint256, std::unique_ptr<std::mutex>> accountMutexes;
 
     std::map<intx::uint256, std::map<intx::uint256, intx::uint256>> storageNonceValueHistory;
 };
